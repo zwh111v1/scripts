@@ -1,0 +1,72 @@
+/*
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+let minPlayers = 1;
+let maxPlayers = 6;
+let minLevel = [210, 250];
+let maxLevel = [275, 275];
+let maxenter = [2, 1];
+let BossName = ["（210級）", "（250級）"];
+let PQLog = ["JinHillah", "JinHillah_Hard"];
+let event = ["boss_jinhillah", "boss_jinhillah_hard"];
+let minLimits = [0,0];//（萬為單位） 按照順序寫
+let onlyOne = true;
+let startmap = 450011990;
+
+
+let canJoinDay = [4];//星期几能进 0表示周7
+var canjoin;
+var date = new Date(); 
+var week = new Date().getDay(); 
+if(canJoinDay.indexOf(week) != -1){
+	canjoin = true;
+}else{
+	canjoin = false;
+}
+if(!canjoin){
+	npc.say("今天進不去哦！星期四才可以進去")
+}
+else if(!player.isQuestCompleted(34330)){
+	npc.say("你還沒完成拉劇情阿!")
+}
+else{
+
+if (map.getId() == startmap) {
+        let text = "";
+        for (let i = 0; i < BossName.length; i++) {
+                text += "\r\n#b#L" + i + "#" + BossName[i] + "#l#k";
+        }
+        let sel = npc.askMenuA("必須現在進入與boss戰鬥.#b" + text,true);
+        if (party == null || player.getId() != party.getLeader()) {
+                npc.sayNextS("你需要有一個#r" + minPlayers + "~" + maxPlayers + "#k人的隊伍.並且等級在" + minLevel[sel] + "~" + maxLevel[sel] + "範圍,\r\n那麼請讓你的組隊長和我對話吧!");
+        } else if (party.numberOfMembersInChannel() < minPlayers || party.getMembersCount(map.getId(), 1, 275) > maxPlayers) {
+                npc.sayNextS("你需要有一個#r" + minPlayers + "~" + maxPlayers + "#k人的隊伍.!");
+        } else if (party.getMembersCount(map.getId(), minLevel[sel], maxLevel[sel]) < minPlayers) {
+                npc.sayNextS("你隊員的等級要在" + minLevel[sel] + "~" + maxLevel[sel] + "範圍!請確認!");
+        } else if (party.getMembersCount(map.getId(), 1, 275) < party.getMembersCount()) {
+                npc.sayNextS("好像有隊員在其他地方，請把隊員都召集到這裡！");
+        } else if (!party.isAllMembersAllowedPQ(PQLog[sel], maxenter[sel])) {
+                npc.sayNextS("你隊員#r#e" + party.getNotAllowedMember(PQLog[sel], maxenter[sel]) + "#n#k次數已經達到上限了。");
+		}  else if (npc.makeEvent(event[sel], onlyOne, party) == null) {
+					npc.say("已經有隊伍在進行了,請更換其他頻道嘗試。");
+				}
+			
+		
+} else {
+        let ret = npc.askYesNoS("#e<Boss>#n\r\n\r\n你想要現在就離開這裡嗎？");
+        if (ret == 1) {
+                player.changeMap(11110);
+        }
+}
+}
